@@ -72,7 +72,11 @@ type Config interface {
 	// to use for peer management
 	GetRedisSentinelHosts() ([]string, error)
 
-	// GetRedisSentinelPassword returns a list of addresses of Redis sentinel instances
+	// GetRedisSentinelUsername returns the username for Redis sentinel instances
+	// to use for peer management
+	GetRedisSentinelUsername() (string, error)
+
+	// GetRedisSentinelPassword returns the password for Redis sentinel instances
 	// to use for peer management
 	GetRedisSentinelPassword() (string, error)
 

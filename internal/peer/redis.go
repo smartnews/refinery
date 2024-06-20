@@ -111,9 +111,19 @@ func buildSentinelClient(c config.Config) (*redis.Client, error) {
 		opt.Username = username
 	}
 
-	password, _ := c.GetRedisPassword()
-	if password != "" {
-		opt.Password = password
+	authToken, _ := c.GetRedisAuthCode()
+	if authToken != "" {
+		opt.Password = authToken
+	} else {
+		username, _ := c.GetRedisUsername()
+		if username != "" {
+			opt.Username = username
+		}
+
+		password, _ := c.GetRedisPassword()
+		if password != "" {
+			opt.Password = password
+		}
 	}
 
 	sentinelMaster, err := c.GetRedisSentinelMasterName()
@@ -127,6 +137,11 @@ func buildSentinelClient(c config.Config) (*redis.Client, error) {
 		sentinelHosts = []string{"localhost:6379"}
 	}
 	opt.SentinelAddrs = sentinelHosts
+
+	sentinelUsername, _ := c.GetRedisSentinelUsername()
+	if sentinelUsername != "" {
+		opt.SentinelPassword = sentinelUsername
+	}
 
 	sentinelPassword, _ := c.GetRedisSentinelPassword()
 	if sentinelPassword != "" {
@@ -157,9 +172,19 @@ func buildStandaloneClient(c config.Config) (*redis.Client, error) {
 		opt.Username = username
 	}
 
-	password, _ := c.GetRedisPassword()
-	if password != "" {
-		opt.Password = password
+	authToken, _ := c.GetRedisAuthCode()
+	if authToken != "" {
+		opt.Password = authToken
+	} else {
+		username, _ := c.GetRedisUsername()
+		if username != "" {
+			opt.Username = username
+		}
+
+		password, _ := c.GetRedisPassword()
+		if password != "" {
+			opt.Password = password
+		}
 	}
 
 	redisHost, _ := c.GetRedisHost()
@@ -193,14 +218,19 @@ func buildClusterClient(c config.Config) (*redis.ClusterClient, error) {
 	}
 	opt.Addrs = hosts
 
-	username, _ := c.GetRedisUsername()
-	if username != "" {
-		opt.Username = username
-	}
+	authToken, _ := c.GetRedisAuthCode()
+	if authToken != "" {
+		opt.Password = authToken
+	} else {
+		username, _ := c.GetRedisUsername()
+		if username != "" {
+			opt.Username = username
+		}
 
-	password, _ := c.GetRedisPassword()
-	if password != "" {
-		opt.Password = password
+		password, _ := c.GetRedisPassword()
+		if password != "" {
+			opt.Password = password
+		}
 	}
 
 	tlsConfig, err := createTLSConfig(c)

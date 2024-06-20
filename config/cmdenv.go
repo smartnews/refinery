@@ -36,7 +36,8 @@ type CmdEnv struct {
 	RedisClusterHosts       []string   `long:"redis-cluster-hosts" env:"REFINERY_REDIS_CLUSTER_HOST" description:"Redis cluster host addresses"`
 	RedisSentinelMasterName string     `long:"redis-sentinel-master-name" env:"REFINERY_REDIS_SENTINEL_MASTER_NAME" description:"Redis sentinel master name"`
 	RedisSentinelHosts      []string   `long:"redis-sentinel-host" env:"REFINERY_REDIS_SENTINEL_HOSTS" description:"Redis sentinel host addresses"`
-	RedisSentinelPassword   []string   `long:"redis-sentinel-password" env:"REFINERY_REDIS_SENTINEL_PASSWORD" description:"Redis sentinel password"`
+	RedisSentinelUsername   string     `long:"redis-sentinel-username" env:"REFINERY_REDIS_SENTINEL_USERNAME" description:"Redis sentinel username"`
+	RedisSentinelPassword   string     `long:"redis-sentinel-password" env:"REFINERY_REDIS_SENTINEL_PASSWORD" description:"Redis sentinel password"`
 	RedisUsername           string     `long:"redis-username" env:"REFINERY_REDIS_USERNAME" description:"Redis username"`
 	RedisPassword           string     `long:"redis-password" env:"REFINERY_REDIS_PASSWORD" description:"Redis password"`
 	RedisAuthCode           string     `long:"redis-auth-code" env:"REFINERY_REDIS_AUTH_CODE" description:"Redis AUTH code"`

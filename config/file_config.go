@@ -200,6 +200,7 @@ type RedisPeerManagementConfig struct {
 	Username           string   `yaml:"Username" cmdenv:"RedisUsername"`
 	Password           string   `yaml:"Password" cmdenv:"RedisPassword"`
 	SentinelPassword   string   `yaml:"SentinelPassword" cmdenv:"RedisSentinelPassword"`
+	SentinelUsername   string   `yaml:"SentinelUsername" cmdenv:"RedisSentinelUsername"`
 	AuthCode           string   `yaml:"AuthCode" cmdenv:"RedisAuthCode"`
 	Prefix             string   `yaml:"Prefix" default:"refinery"`
 	Database           int      `yaml:"Database"`
@@ -601,6 +602,13 @@ func (f *fileConfig) GetRedisSentinelHosts() ([]string, error) {
 	defer f.mux.RUnlock()
 
 	return f.mainConfig.RedisPeerManagement.SentinelHosts, nil
+}
+
+func (f *fileConfig) GetRedisSentinelUsername() (string, error) {
+	f.mux.RLock()
+	defer f.mux.RUnlock()
+
+	return f.mainConfig.RedisPeerManagement.SentinelUsername, nil
 }
 
 func (f *fileConfig) GetRedisSentinelPassword() (string, error) {

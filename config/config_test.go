@@ -132,6 +132,19 @@ func TestRedisSentinelHostsEnvVar(t *testing.T) {
 	}
 }
 
+func TestRedisSentinelUsernameEnvVar(t *testing.T) {
+	const sentinelUsername = "admin1234"
+	const envVarName = "REFINERY_REDIS_SENTINEL_USERNAME"
+	t.Setenv(envVarName, sentinelUsername)
+
+	c, err := getConfig([]string{"--no-validate", "--config", "../config.yaml", "--rules_config", "../rules.yaml"})
+	assert.NoError(t, err)
+
+	if d, _ := c.GetRedisSentinelUsername(); d != sentinelUsername {
+		t.Error("received", d, "expected", sentinelUsername)
+	}
+}
+
 func TestRedisSentinelPasswordEnvVar(t *testing.T) {
 	const sentinelPassword = "admin1234"
 	const envVarName = "REFINERY_REDIS_SENTINEL_PASSWORD"
@@ -140,7 +153,7 @@ func TestRedisSentinelPasswordEnvVar(t *testing.T) {
 	c, err := getConfig([]string{"--no-validate", "--config", "../config.yaml", "--rules_config", "../rules.yaml"})
 	assert.NoError(t, err)
 
-	if d, _ := c.GetRedisSentinelMasterName(); d != sentinelPassword {
+	if d, _ := c.GetRedisSentinelPassword(); d != sentinelPassword {
 		t.Error("received", d, "expected", sentinelPassword)
 	}
 }
@@ -153,7 +166,7 @@ func TestRedisClientTypeEnvVar(t *testing.T) {
 	c, err := getConfig([]string{"--no-validate", "--config", "../config.yaml", "--rules_config", "../rules.yaml"})
 	assert.NoError(t, err)
 
-	if d, _ := c.GetRedisSentinelMasterName(); d != clientType {
+	if d, _ := c.GetRedisClientType(); d != clientType {
 		t.Error("received", d, "expected", clientType)
 	}
 }
