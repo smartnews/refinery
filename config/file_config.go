@@ -192,15 +192,20 @@ type PeerManagementConfig struct {
 }
 
 type RedisPeerManagementConfig struct {
-	Host           string   `yaml:"Host" cmdenv:"RedisHost"`
-	Username       string   `yaml:"Username" cmdenv:"RedisUsername"`
-	Password       string   `yaml:"Password" cmdenv:"RedisPassword"`
-	AuthCode       string   `yaml:"AuthCode" cmdenv:"RedisAuthCode"`
-	Prefix         string   `yaml:"Prefix" default:"refinery"`
-	Database       int      `yaml:"Database"`
-	UseTLS         bool     `yaml:"UseTLS" `
-	UseTLSInsecure bool     `yaml:"UseTLSInsecure" `
-	Timeout        Duration `yaml:"Timeout" default:"5s"`
+	ClientType         string   `yaml:"ClientType" cmdenv:"RedisClientType" default:"standalone"`
+	Host               string   `yaml:"Host" cmdenv:"RedisHost"`
+	ClusterHosts       []string `yaml:"ClusterHosts" cmdenv:"RedisClusterHosts"`
+	SentinelMasterName string   `yaml:"SentinelMasterName" cmdenv:"RedisSentinelMasterName"`
+	SentinelHosts      []string `yaml:"SentinelHosts" cmdenv:"RedisSentinelHosts"`
+	Username           string   `yaml:"Username" cmdenv:"RedisUsername"`
+	Password           string   `yaml:"Password" cmdenv:"RedisPassword"`
+	SentinelPassword   string   `yaml:"SentinelPassword" cmdenv:"RedisSentinelPassword"`
+	AuthCode           string   `yaml:"AuthCode" cmdenv:"RedisAuthCode"`
+	Prefix             string   `yaml:"Prefix" default:"refinery"`
+	Database           int      `yaml:"Database"`
+	UseTLS             bool     `yaml:"UseTLS" `
+	UseTLSInsecure     bool     `yaml:"UseTLSInsecure" `
+	Timeout            Duration `yaml:"Timeout" default:"5s"`
 }
 
 type CollectionConfig struct {
@@ -575,6 +580,41 @@ func (f *fileConfig) GetRedisHost() (string, error) {
 	defer f.mux.RUnlock()
 
 	return f.mainConfig.RedisPeerManagement.Host, nil
+}
+
+func (f *fileConfig) GetRedisClusterHosts() ([]string, error) {
+	f.mux.RLock()
+	defer f.mux.RUnlock()
+
+	return f.mainConfig.RedisPeerManagement.ClusterHosts, nil
+}
+
+func (f *fileConfig) GetRedisSentinelMasterName() (string, error) {
+	f.mux.RLock()
+	defer f.mux.RUnlock()
+
+	return f.mainConfig.RedisPeerManagement.SentinelMasterName, nil
+}
+
+func (f *fileConfig) GetRedisSentinelHosts() ([]string, error) {
+	f.mux.RLock()
+	defer f.mux.RUnlock()
+
+	return f.mainConfig.RedisPeerManagement.SentinelHosts, nil
+}
+
+func (f *fileConfig) GetRedisSentinelPassword() (string, error) {
+	f.mux.RLock()
+	defer f.mux.RUnlock()
+
+	return f.mainConfig.RedisPeerManagement.SentinelPassword, nil
+}
+
+func (f *fileConfig) GetRedisClientType() (string, error) {
+	f.mux.RLock()
+	defer f.mux.RUnlock()
+
+	return f.mainConfig.RedisPeerManagement.ClientType, nil
 }
 
 func (f *fileConfig) GetRedisUsername() (string, error) {

@@ -12,9 +12,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gomodule/redigo/redis"
 	"github.com/honeycombio/refinery/config"
 	"github.com/honeycombio/refinery/internal/redimem"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,58 +46,26 @@ type redisPeers struct {
 
 // NewRedisPeers returns a peers collection backed by redis
 func newRedisPeers(ctx context.Context, c config.Config, done chan struct{}) (Peers, error) {
-	redisHost, _ := c.GetRedisHost()
-
-	if redisHost == "" {
-		redisHost = "localhost:6379"
-	}
-
-	options := buildOptions(c)
-	pool := &redis.Pool{
-		MaxIdle:     3,
-		MaxActive:   30,
-		IdleTimeout: 5 * time.Minute,
-		Wait:        true,
-		Dial: func() (redis.Conn, error) {
-			// if redis is started at the same time as refinery, connecting to redis can
-			// fail and cause refinery to error out.
-			// Instead, we will try to connect to redis for up to 10 seconds with
-			// a 1 second delay between attempts to allow the redis process to init
-			var (
-				conn redis.Conn
-				err  error
-			)
-			for timeout := time.After(10 * time.Second); ; {
-				select {
-				case <-timeout:
-					return nil, err
-				default:
-					if authCode, _ := c.GetRedisAuthCode(); authCode != "" {
-						conn, err = redis.Dial("tcp", redisHost, options...)
-						if err != nil {
-							return nil, err
-						}
-						if _, err := conn.Do("AUTH", authCode); err != nil {
-							conn.Close()
-							return nil, err
-						}
-						if err == nil {
-							return conn, nil
-						}
-					} else {
-						conn, err = redis.Dial("tcp", redisHost, options...)
-						if err == nil {
-							return conn, nil
-						}
-					}
-					time.Sleep(time.Second)
-				}
-			}
-		},
-	}
-
 	// deal with this error
 	address, err := publicAddr(c)
+
+	if err != nil {
+		return nil, err
+	}
+
+	connType, _ := c.GetRedisClientType()
+
+	var redisClient redis.Cmdable
+	switch strings.ToLower(connType) {
+	case "cluster":
+		redisClient, err = buildClusterClient(c)
+	case "sentinel":
+		redisClient, err = buildSentinelClient(c)
+	case "standalone":
+		redisClient, err = buildStandaloneClient(c)
+	default:
+		return nil, errors.New(fmt.Sprintf("Redis client type '%s' is not valid.", connType))
+	}
 
 	if err != nil {
 		return nil, err
@@ -106,7 +74,7 @@ func newRedisPeers(ctx context.Context, c config.Config, done chan struct{}) (Pe
 	peers := &redisPeers{
 		store: &redimem.RedisMembership{
 			Prefix: c.GetRedisPrefix(),
-			Pool:   pool,
+			Client: redisClient,
 		},
 		peers:      make([]string, 1),
 		c:          c,
@@ -133,6 +101,138 @@ func newRedisPeers(ctx context.Context, c config.Config, done chan struct{}) (Pe
 	go peers.watchPeers(done)
 
 	return peers, nil
+}
+
+func buildSentinelClient(c config.Config) (*redis.Client, error) {
+	opt := &redis.FailoverOptions{}
+
+	username, _ := c.GetRedisUsername()
+	if username != "" {
+		opt.Username = username
+	}
+
+	password, _ := c.GetRedisPassword()
+	if password != "" {
+		opt.Password = password
+	}
+
+	sentinelMaster, err := c.GetRedisSentinelMasterName()
+	if err != nil {
+		return nil, err
+	}
+	opt.MasterName = sentinelMaster
+
+	sentinelHosts, _ := c.GetRedisSentinelHosts()
+	if len(sentinelHosts) == 0 {
+		sentinelHosts = []string{"localhost:6379"}
+	}
+	opt.SentinelAddrs = sentinelHosts
+
+	sentinelPassword, _ := c.GetRedisSentinelPassword()
+	if sentinelPassword != "" {
+		opt.SentinelPassword = sentinelPassword
+	}
+
+	tlsConfig, err := createTLSConfig(c)
+	if err != nil {
+		return nil, err
+	}
+
+	if tlsConfig != nil {
+		opt.TLSConfig = tlsConfig
+	}
+
+	opt.DB = c.GetRedisDatabase()
+
+	opt.DialTimeout = time.Second
+
+	return redis.NewFailoverClient(opt), nil
+}
+
+func buildStandaloneClient(c config.Config) (*redis.Client, error) {
+	opt := &redis.Options{}
+
+	username, _ := c.GetRedisUsername()
+	if username != "" {
+		opt.Username = username
+	}
+
+	password, _ := c.GetRedisPassword()
+	if password != "" {
+		opt.Password = password
+	}
+
+	redisHost, _ := c.GetRedisHost()
+	if len(redisHost) == 0 {
+		redisHost = "localhost:6379"
+	}
+	opt.Addr = redisHost
+
+	tlsConfig, err := createTLSConfig(c)
+	if err != nil {
+		return nil, err
+	}
+
+	if tlsConfig != nil {
+		opt.TLSConfig = tlsConfig
+	}
+
+	opt.DB = c.GetRedisDatabase()
+
+	opt.DialTimeout = 1 * time.Second
+
+	return redis.NewClient(opt), nil
+}
+
+func buildClusterClient(c config.Config) (*redis.ClusterClient, error) {
+	opt := &redis.ClusterOptions{}
+
+	hosts, _ := c.GetRedisClusterHosts()
+	if len(hosts) == 0 {
+		hosts = []string{"localhost:6379"}
+	}
+	opt.Addrs = hosts
+
+	username, _ := c.GetRedisUsername()
+	if username != "" {
+		opt.Username = username
+	}
+
+	password, _ := c.GetRedisPassword()
+	if password != "" {
+		opt.Password = password
+	}
+
+	tlsConfig, err := createTLSConfig(c)
+	if err != nil {
+		return nil, err
+	}
+
+	if tlsConfig != nil {
+		opt.TLSConfig = tlsConfig
+	}
+
+	opt.DialTimeout = 1 * time.Second
+
+	return redis.NewClusterClient(opt), nil
+}
+
+func createTLSConfig(c config.Config) (*tls.Config, error) {
+	var tlsConfig *tls.Config
+
+	useTLS, _ := c.GetUseTLS()
+	tlsInsecure, _ := c.GetUseTLSInsecure()
+	if useTLS {
+		tlsConfig = &tls.Config{
+			MinVersion: tls.VersionTLS12,
+		}
+
+		if tlsInsecure {
+			tlsConfig.InsecureSkipVerify = true
+		}
+	}
+
+	return tlsConfig, nil
 }
 
 func (p *redisPeers) GetPeers() ([]string, error) {
@@ -233,42 +333,6 @@ func (p *redisPeers) watchPeers(done chan struct{}) {
 			return
 		}
 	}
-}
-
-func buildOptions(c config.Config) []redis.DialOption {
-	options := []redis.DialOption{
-		redis.DialReadTimeout(1 * time.Second),
-		redis.DialConnectTimeout(1 * time.Second),
-		redis.DialDatabase(c.GetRedisDatabase()),
-	}
-
-	username, _ := c.GetRedisUsername()
-	if username != "" {
-		options = append(options, redis.DialUsername(username))
-	}
-
-	password, _ := c.GetRedisPassword()
-	if password != "" {
-		options = append(options, redis.DialPassword(password))
-	}
-
-	useTLS, _ := c.GetUseTLS()
-	tlsInsecure, _ := c.GetUseTLSInsecure()
-	if useTLS {
-		tlsConfig := &tls.Config{
-			MinVersion: tls.VersionTLS12,
-		}
-
-		if tlsInsecure {
-			tlsConfig.InsecureSkipVerify = true
-		}
-
-		options = append(options,
-			redis.DialTLSConfig(tlsConfig),
-			redis.DialUseTLS(true))
-	}
-
-	return options
 }
 
 func publicAddr(c config.Config) (string, error) {

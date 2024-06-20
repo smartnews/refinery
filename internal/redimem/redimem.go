@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gomodule/redigo/redis"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 )
 
@@ -37,15 +37,15 @@ const (
 	redisScanTimeout = 5 * time.Second
 
 	// redisScanBatchSize indicates how many keys to retrieve from Redis at a time.
-	redisScanBatchSize = "1000"
+	redisScanBatchSize = 1000
 )
 
 // RedisMembership implements the Membership interface using Redis as the backend
 type RedisMembership struct {
 	// Prefix is a way of namespacing your group membership
 	Prefix string
-	// Pool should be an already-initialized redis pool
-	Pool *redis.Pool
+	// An already-initialized client for the redis we're connecting against
+	Client redis.Cmdable
 	// RepeatCount is the number of times GetMembers should ask Redis for the list
 	// of members in the pool. As seen in the Redis docs "The SCAN family of
 	// commands only offer limited guarantees about the returned elements"
@@ -64,9 +64,9 @@ func (rm *RedisMembership) validateDefaults() error {
 	if rm.RepeatCount == 0 {
 		rm.RepeatCount = defaultRepeatCount
 	}
-	if rm.Pool == nil {
+	if rm.Client == nil {
 		// TODO put a mute pool in here or something that will safely noop and not panic
-		return errors.New("can't use RedisMembership with an unitialized Redis pool")
+		return errors.New("can't use RedisMembership with an unitialized Redis client")
 	}
 	return nil
 }
@@ -77,14 +77,10 @@ func (rm *RedisMembership) Register(ctx context.Context, memberName string, time
 		return err
 	}
 	key := fmt.Sprintf("%s•%s•%s", globalPrefix, rm.Prefix, memberName)
-	timeoutSec := int64(timeout) / int64(time.Second)
-	conn, err := rm.Pool.GetContext(ctx)
+
+	_, err = rm.Client.Set(ctx, key, "present", timeout).Result()
 	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	_, err = conn.Do("SET", key, "present", "EX", timeoutSec)
-	if err != nil {
+		timeoutSec := int64(timeout) / int64(time.Second)
 		logrus.WithField("name", memberName).
 			WithField("timeoutSec", timeoutSec).
 			WithField("err", err).
@@ -100,12 +96,7 @@ func (rm *RedisMembership) Unregister(ctx context.Context, memberName string) er
 		return err
 	}
 	key := fmt.Sprintf("%s•%s•%s", globalPrefix, rm.Prefix, memberName)
-	conn, err := rm.Pool.GetContext(ctx)
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	_, err = conn.Do("DEL", key)
+	_, err = rm.Client.Del(ctx, key).Result()
 	if err != nil {
 		logrus.WithField("name", memberName).
 			WithField("err", err).
@@ -150,12 +141,7 @@ func (rm *RedisMembership) GetMembers(ctx context.Context) ([]string, error) {
 
 func (rm *RedisMembership) getMembersOnce(ctx context.Context) ([]string, error) {
 	keyPrefix := fmt.Sprintf("%s•%s•*", globalPrefix, rm.Prefix)
-	conn, err := rm.Pool.GetContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-	keysChan, errChan := rm.scan(conn, keyPrefix, redisScanBatchSize, redisScanTimeout)
+	keysChan, errChan := rm.scan(ctx, keyPrefix, redisScanBatchSize, redisScanTimeout)
 	memberList := make([]string, 0)
 	for key := range keysChan {
 		name := strings.Split(key, "•")[2]
@@ -177,7 +163,7 @@ func (rm *RedisMembership) getMembersOnce(ctx context.Context) ([]string, error)
 // scanning will stop and the function will return a timeout value to the error
 // channel. There may have been valid results already returned to the keys
 // channel, and there may or may not be additional keys in the DB.
-func (rm *RedisMembership) scan(conn redis.Conn, pattern, count string, timeout time.Duration) (<-chan string, <-chan error) {
+func (rm *RedisMembership) scan(ctx context.Context, pattern string, count int64, timeout time.Duration) (<-chan string, <-chan error) {
 	// make both channels buffered so they can be read in any order instead of both
 	// at once
 	keyChan := make(chan string, 1)
@@ -189,29 +175,14 @@ func (rm *RedisMembership) scan(conn redis.Conn, pattern, count string, timeout 
 	stopAt := time.Now().Add(timeout)
 
 	go func() {
-		cursor := "0"
+		cursor := uint64(0)
 		for {
 			if time.Now().After(stopAt) {
 				errChan <- errors.New("redis scan timeout")
 				break
 			}
-			values, err := redis.Values(conn.Do("SCAN", cursor, "MATCH", pattern, "COUNT", count))
-			if err != nil {
-				errChan <- err
-				break
-			}
-			if len(values) != 2 {
-				errChan <- errors.New("unexpected response format from redis")
-				break
-			}
 
-			cursor, err = redis.String(values[0], nil)
-			if err != nil {
-				errChan <- err
-				break
-			}
-
-			keys, err := redis.Strings(values[1], nil)
+			keys, cursor, err := rm.Client.Scan(ctx, cursor, pattern, count).Result()
 			if err != nil {
 				errChan <- err
 				break
@@ -222,7 +193,7 @@ func (rm *RedisMembership) scan(conn redis.Conn, pattern, count string, timeout 
 			}
 
 			// redis will return 0 when we have iterated over the entire set
-			if cursor == "0" {
+			if cursor == uint64(0) {
 				break
 			}
 		}

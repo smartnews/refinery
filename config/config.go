@@ -60,6 +60,22 @@ type Config interface {
 	// management.
 	GetRedisHost() (string, error)
 
+	// GetRedisClusterHosts returns a list of addresses of Redis cluster instances
+	// to use for peer management
+	GetRedisClusterHosts() ([]string, error)
+
+	// GetRedisSentinelMasterName returns the name of the master of Redis sentinel instance
+	// to use for peer management
+	GetRedisSentinelMasterName() (string, error)
+
+	// GetRedisSentinelHosts returns a list of addresses of Redis sentinel instances
+	// to use for peer management
+	GetRedisSentinelHosts() ([]string, error)
+
+	// GetRedisSentinelPassword returns a list of addresses of Redis sentinel instances
+	// to use for peer management
+	GetRedisSentinelPassword() (string, error)
+
 	// GetRedisUsername returns the username of a Redis instance to use for peer
 	// management.
 	GetRedisUsername() (string, error)
@@ -75,6 +91,9 @@ type Config interface {
 	// GetRedisPrefix returns the prefix string used in the keys for peer
 	// management.
 	GetRedisPrefix() string
+
+	// GetRedisClientType returns the type of redis client we wish to create.
+	GetRedisClientType() (string, error)
 
 	// GetRedisDatabase returns the ID of the Redis database to use for peer management.
 	GetRedisDatabase() int

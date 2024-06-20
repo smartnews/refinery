@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
-	"github.com/gomodule/redigo/redis"
+	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 
 	"github.com/honeycombio/refinery/internal/redimem"
@@ -26,24 +26,11 @@ func main() {
 
 	logrus.SetLevel(logrus.WarnLevel)
 
-	pool := &redis.Pool{
-		MaxIdle:     3,
-		MaxActive:   30,
-		IdleTimeout: 5 * time.Minute,
-		Wait:        true,
-		Dial: func() (redis.Conn, error) {
-			return redis.Dial(
-				"tcp", "localhost:6379",
-				redis.DialReadTimeout(1*time.Second),
-				redis.DialConnectTimeout(1*time.Second),
-				redis.DialDatabase(0), // TODO enable multiple databases for multiple samproxies
-			)
-		},
-	}
-
 	rm := &redimem.RedisMembership{
 		Prefix: "test_redimem",
-		Pool:   pool,
+		Client: redis.NewClient(&redis.Options{
+			Addr: "localhost:6379",
+		}),
 	}
 
 	wg := sync.WaitGroup{}
