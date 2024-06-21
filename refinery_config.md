@@ -672,6 +672,18 @@ The format is a list of strings of the form "scheme://host:port".
 `RedisPeerManagement` controls how the Refinery cluster communicates between peers when using Redis.
 Only applies when `PeerManagement.Type` is "redis".
 
+### `ClientType`
+
+`ClientType` is the type of Redis instance you are using for peer cluster membership management.
+
+Must be in the form `host:port`.
+
+- Not eligible for live reload.
+- Type: `standalone`
+- Valid Values: `standalone`, `cluster`, `sentinel`
+- Example: `standalone`
+- Environment variable: `REFINERY_REDIS_CLIENT_TYPE`
+
 ### `Host`
 
 `Host` is the host and port of the Redis instance to use for peer cluster membership management.
@@ -682,6 +694,58 @@ Must be in the form `host:port`.
 - Type: `hostport`
 - Example: `localhost:6379`
 - Environment variable: `REFINERY_REDIS_HOST`
+
+### `ClusterHosts`
+
+`ClusterHosts` are the hosts and ports of the Redis Cluster instances to use for peer cluster membership management.
+
+Must be in the form `host:port,host:port`.
+
+- Not eligible for live reload.
+- Type: `stringarray`
+- Example: `localhost:6379,localhost:6378`
+- Environment variable: `REFINERY_REDIS_CLUSTER_HOSTS`
+
+### `SentinelMasterName`
+
+`SentinelMasterName` is the name of the master managed by sentinel used to connect to Redis for peer cluster membership management.
+
+Many Redis installations do not use this field.
+
+- Not eligible for live reload.
+- Type: `string`
+- Environment variable: `REFINERY_REDIS_SENTINEL_MASTER_NAME`
+
+### `SentinelHosts`
+
+`SentinelHosts` are the hosts and ports of the Redis Sentinel instances to use for peer cluster membership management.
+
+Must be in the form `host:port,host:port`.
+
+- Not eligible for live reload.
+- Type: `stringarray`
+- Example: `localhost:6379,localhost:6378`
+- Environment variable: `REFINERY_REDIS_SENTINEL_HOSTS`
+
+### `SentinelUsername`
+
+`SentinelUsername` is the username used to connect to Redis Sentinel instances for peer cluster membership management.
+
+Many Redis installations do not use this field.
+
+- Not eligible for live reload.
+- Type: `string`
+- Environment variable: `REFINERY_REDIS_SENTINEL_USERNAME`
+
+### `SentinelPassword`
+
+`SentinelPassword` is the password used to connect to Redis Sentinel instances for peer cluster membership management.
+
+Many Redis installations do not use this field.
+
+- Not eligible for live reload.
+- Type: `string`
+- Environment variable: `REFINERY_REDIS_SENTINEL_PASSWORD`
 
 ### `Username`
 

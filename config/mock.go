@@ -36,8 +36,20 @@ type MockConfig struct {
 	GetLoggerLevelVal                Level
 	GetPeersErr                      error
 	GetPeersVal                      []string
+	GetRedisClientTypeErr            error
+	GetRedisClientTypeVal            string
 	GetRedisHostErr                  error
 	GetRedisHostVal                  string
+	GetRedisClusterHostsErr          error
+	GetRedisClusterHostsVal          []string
+	GetRedisSentinelMasterNameErr    error
+	GetRedisSentinelMasterNameVal    string
+	GetRedisSentinelHostsErr         error
+	GetRedisSentinelHostsVal         []string
+	GetRedisSentinelUsernameErr      error
+	GetRedisSentinelUsernameVal      string
+	GetRedisSentinelPasswordErr      error
+	GetRedisSentinelPasswordVal      string
 	GetRedisUsernameErr              error
 	GetRedisUsernameVal              string
 	GetRedisPasswordErr              error
@@ -218,11 +230,53 @@ func (m *MockConfig) GetPeers() ([]string, error) {
 	return m.GetPeersVal, m.GetPeersErr
 }
 
+func (m *MockConfig) GetRedisClientType() (string, error) {
+	m.Mux.RLock()
+	defer m.Mux.RUnlock()
+
+	return m.GetRedisClientTypeVal, m.GetRedisClientTypeErr
+}
+
 func (m *MockConfig) GetRedisHost() (string, error) {
 	m.Mux.RLock()
 	defer m.Mux.RUnlock()
 
 	return m.GetRedisHostVal, m.GetRedisHostErr
+}
+
+func (m *MockConfig) GetRedisClusterHosts() ([]string, error) {
+	m.Mux.RLock()
+	defer m.Mux.RUnlock()
+
+	return m.GetRedisClusterHostsVal, m.GetRedisClusterHostsErr
+}
+
+func (m *MockConfig) GetRedisSentinelMasterName() (string, error) {
+	m.Mux.RLock()
+	defer m.Mux.RUnlock()
+
+	return m.GetRedisSentinelMasterNameVal, m.GetRedisSentinelMasterNameErr
+}
+
+func (m *MockConfig) GetRedisSentinelHosts() ([]string, error) {
+	m.Mux.RLock()
+	defer m.Mux.RUnlock()
+
+	return m.GetRedisSentinelHostsVal, m.GetRedisSentinelHostsErr
+}
+
+func (m *MockConfig) GetRedisSentinelUsername() (string, error) {
+	m.Mux.RLock()
+	defer m.Mux.RUnlock()
+
+	return m.GetRedisSentinelUsernameVal, m.GetRedisSentinelUsernameErr
+}
+
+func (m *MockConfig) GetRedisSentinelPassword() (string, error) {
+	m.Mux.RLock()
+	defer m.Mux.RUnlock()
+
+	return m.GetRedisSentinelPasswordVal, m.GetRedisSentinelPasswordErr
 }
 
 func (m *MockConfig) GetRedisUsername() (string, error) {

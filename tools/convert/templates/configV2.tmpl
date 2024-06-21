@@ -707,6 +707,14 @@ RedisPeerManagement:
   ## `PeerManagement.Type` is "redis".
   ##
   ####
+    ## ClientType is the type of Redis instance you are using for peer cluster
+    ## membership management.
+    ##
+    ## Must be of one of `standalone`, `cluster`, or `sentinel`.
+    ##
+    ## Not eligible for live reload.
+    {{ nonEmptyString .Data "ClientType" "PeerManagement.RedisClientType" "localhost:6379" }}
+
     ## Host is the host and port of the Redis instance to use for peer
     ## cluster membership management.
     ##
@@ -715,6 +723,48 @@ RedisPeerManagement:
     ## Should be an ip:port like "localhost:6379".
     ## Not eligible for live reload.
     {{ nonEmptyString .Data "Host" "PeerManagement.RedisHost" "localhost:6379" }}
+
+    ## ClusterHosts are the hosts and ports of the Redis Cluster instances to use for
+    ## peer cluster membership management.
+    ##
+    ## Must be in the form `host:port,host:port`.
+    ##
+    ## Should be an ip:port like "localhost:6379,localhost:6378".
+    ## Not eligible for live reload.
+    {{ stringarray .Data "ClusterHosts" "PeerManagement.RedisClusterHosts" "localhost:6379" }}
+
+    ## SentinelMasterName is the name of the master managed by sentinel used to connect to Redis
+    ## for peer cluster membership management.
+    ##
+    ## Many Redis installations do not use this field.
+    ##
+    ## Not eligible for live reload.
+    {{ stringarray .Data "SentinelMasterName" "PeerManagement.RedisSentinelMasterName" """ }}
+
+    ## SentinelHosts are the hosts and ports of the Redis Sentinel instances to use for peer
+    ## cluster membership management.
+    ##
+    ## Must be in the form `host:port,host:port`.
+    ##
+    ## Should be an ip:port like "localhost:6379,localhost:6378".
+    ## Not eligible for live reload.
+    {{ stringarray .Data "SentinelHosts" "PeerManagement.RedisSentinelHosts" ""localhost:6379" }}
+
+    ## SentinelUsername is the username used to connect to Redis Sentinel instances for peer cluster
+    ## membership management.
+    ##
+    ## Many Redis installations do not use this field.
+    ##
+    ## Not eligible for live reload.
+    {{ nonEmptyString .Data "SentinelUsername" "PeerManagement.RedisSentinelUsername" "" }}
+
+    ## SentinelPassword is the password used to connect to Redis Sentinel instances for peer
+    ## cluster membership management.
+    ##
+    ## Many Redis installations do not use this field.
+    ##
+    ## Not eligible for live reload.
+    {{ nonEmptyString .Data "SentinelPassword" "PeerManagement.RedisSentinelPassword" "" }}
 
     ## Username is the username used to connect to Redis for peer cluster
     ## membership management.

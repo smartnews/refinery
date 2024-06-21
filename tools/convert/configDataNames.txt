@@ -130,7 +130,19 @@ PeerManagement:
 
 
 RedisPeerManagement:
+  - ClientType (originally PeerManagement.ClientType)
+
   - Host (originally PeerManagement.RedisHost)
+
+  - ClusterHosts (originally PeerManagement.ClusterHosts)
+
+  - SentinelMasterName (originally PeerManagement.SentinelMasterName)
+
+  - SentinelHosts (originally PeerManagement.SentinelHosts)
+
+  - SentinelUsername (originally PeerManagement.SentinelUsername)
+
+  - SentinelPassword (originally PeerManagement.SentinelPassword)
 
   - Username (originally PeerManagement.RedisUsername)
 

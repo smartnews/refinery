@@ -220,11 +220,48 @@ Metrics = "honeycomb"
 
 # [PeerManagement]
 # Type = "redis"
-# RedisHost is is used to connect to redis for peer cluster membership management.
+# RedisClientType is used to determine which redis client to use when connecting to redis for peer
+# cluster membership management
+# Further, if the environment variable 'REFINERY_REDIS_CLIENT_TYPE' is set it takes
+# precedence and this value is ignored.
+# Not eligible for live reload.
+# RedisClientType = "standalone"
+
+# RedisHost is used to connect to redis for peer cluster membership management.
 # Further, if the environment variable 'REFINERY_REDIS_HOST' is set it takes
 # precedence and this value is ignored.
 # Not eligible for live reload.
 # RedisHost = "localhost:6379"
+
+# RedisClusterHosts is used to connect to Redis set up in cluster mode.
+# If the environment variable 'REFINERY_REDIS_CLUSTER_HOSTS' is set it takes
+# precedence and this value is ignored.
+# Not eligible for live reload.
+# RedisClusterHosts = "localhost:6379"
+
+# RedisSentinelMasterName is the name of the master you wish to connect to via Redis sentinel
+# If the environment variable 'REFINERY_REDIS_SENTINEL_MASTER_NAME' is set it takes
+# precedence and this value is ignored.
+# Not eligible for live reload.
+# RedisSentinelMasterName = ""
+
+# RedisSentinelHosts is used to connect to Redis sentinels set up in sentinal mode
+# If the environment variable 'REFINERY_REDIS_SENTINEL_HOSTS' is set it takes
+# precedence and this value is ignored.
+# Not eligible for live reload.
+# RedisSentinelHosts = ""
+
+# RedisSentinelUsername is the username used to connect to redis sentinel for peer cluster membership management.
+# If the environment variable 'REFINERY_REDIS_SENTINEL_USERNAME' is set it takes
+# precedence and this value is ignored.
+# Not eligible for live reload.
+# RedisSentinelUsername = ""
+
+# SentinelPassword is the password used to connect to redis sentinel for peer cluster membership management.
+# If the environment variable 'REFINERY_REDIS_SENTINEL_PASSWORD' is set it takes
+# precedence and this value is ignored.
+# Not eligible for live reload.
+# SentinelPassword = ""
 
 # RedisUsername is the username used to connect to redis for peer cluster membership management.
 # If the environment variable 'REFINERY_REDIS_USERNAME' is set it takes

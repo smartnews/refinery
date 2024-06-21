@@ -834,6 +834,20 @@ groups:
       is "redis".
 
     fields:
+      - name: ClientType
+        v1group: PeerManagement
+        v1name: RedisClientType
+        type: string
+        valuetype: choice
+        choices: ["standalone", "cluster", "sentinel"]
+        default: "standalone"
+        reload: false
+        envvar: REFINERY_REDIS_CLIENT_TYPE
+        commandline: redis-client-type
+        summary: is the type of Redis instance you are using for peer cluster membership management.
+        description: >
+          Must be of one of `standalone`, `cluster`, or `sentinel`.
+
       - name: Host
         v1group: PeerManagement
         v1name: RedisHost
@@ -846,6 +860,71 @@ groups:
         summary: is the host and port of the Redis instance to use for peer cluster membership management.
         description: >
           Must be in the form `host:port`.
+
+      - name: ClusterHosts
+        v1group: PeerManagement
+        v1name: RedisClusterHosts
+        type: stringarray
+        valuetype: nonemptystring
+        example: "localhost:6379,localhost:6378"
+        reload: false
+        envvar: REFINERY_REDIS_CLUSTER_HOST
+        commandline: redis-cluster-host
+        summary: are the hosts and ports of the Redis Cluster instances to use for peer cluster membership management.
+        description: >
+          Must be in the form `host:port,host:port,...`.
+
+      - name: SentinelMasterName
+        v1group: PeerManagement
+        v1name: RedisSentinelMasterName
+        type: string
+        default: ""
+        valuetype: nonemptystring
+        reload: false
+        envvar: REFINERY_REDIS_SENTINEL_MASTER_NAME
+        commandline: redis-sentinel-master-name
+        summary: is the name of the master managed by sentinel used to connect to Redis for peer cluster membership management.
+        description: >
+          Many Redis installations do not use this field.
+
+      - name: SentinelHosts
+        v1group: PeerManagement
+        v1name: RedisSentinelHosts
+        type: stringarray
+        valuetype: nonemptystring
+        example: "localhost:6379,localhost:6378"
+        reload: false
+        envvar: REFINERY_REDIS_SENTINEL_HOSTS
+        commandline: redis-sentinel-hosts
+        summary: are the hosts and ports of the Redis Sentinel instances to use for peer cluster membership management.
+        description: >
+          Must be in the form `host:port,host:port,...`.
+
+      - name: SentinelUsername
+        v1group: PeerManagement
+        v1name: RedisSentinelUsername
+        type: string
+        default: ""
+        valuetype: nonemptystring
+        reload: false
+        envvar: REFINERY_REDIS_SENTINEL_USERNAME
+        commandline: redis-sentinel-username
+        summary: is the username used to connect to Redis Sentinel instances for peer cluster membership management.
+        description: >
+          Many Redis installations do not use this field.
+
+      - name: SentinelPassword
+        v1group: PeerManagement
+        v1name: RedisSentinelPassword
+        type: string
+        default: ""
+        valuetype: nonemptystring
+        reload: false
+        envvar: REFINERY_REDIS_SENTINEL_PASSWORD
+        commandline: redis-sentinel-password
+        summary: is the password used to connect to Redis Sentinel instances for peer cluster membership management.
+        description: >
+          Many Redis installations do not use this field.
 
       - name: Username
         v1group: PeerManagement

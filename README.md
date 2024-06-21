@@ -96,16 +96,23 @@ Refinery is a typical linux-style command line application, and supports several
 
 Refinery supports the following key environment variables; please see the command line help or the online documentation for the full list. Command line switches take precedence over file configuration, and environment variables take precedence over both.
 
-| Environment Variable                                              | Configuration Field              |
-|-------------------------------------------------------------------|----------------------------------|
-| `REFINERY_GRPC_LISTEN_ADDRESS`                                    | `GRPCListenAddr`                 |
-| `REFINERY_REDIS_HOST`                                             | `PeerManagement.RedisHost`       |
-| `REFINERY_REDIS_USERNAME`                                         | `PeerManagement.RedisUsername`   |
-| `REFINERY_REDIS_PASSWORD`                                         | `PeerManagement.RedisPassword`   |
-| `REFINERY_HONEYCOMB_API_KEY`                                      | `HoneycombLogger.LoggerAPIKey`   |
-| `REFINERY_HONEYCOMB_METRICS_API_KEY`                              | `LegacyMetrics.APIKey`           |
-| `REFINERY_HONEYCOMB_API_KEY`                                      | `LegacyMetrics.APIKey`           |
-| `REFINERY_QUERY_AUTH_TOKEN`                                       | `QueryAuthToken`                 |
+| Environment Variable                  | Configuration Field                      |
+|---------------------------------------|------------------------------------------|
+| `REFINERY_GRPC_LISTEN_ADDRESS`        | `GRPCListenAddr`                         |
+| `REFINERY_REDIS_CLIENT_TYPE`          | `PeerManagement.RedisClientType`         |
+| `REFINERY_REDIS_HOST`                 | `PeerManagement.RedisHost`               |
+| `REFINERY_REDIS_USERNAME`             | `PeerManagement.RedisUsername`           |
+| `REFINERY_REDIS_PASSWORD`             | `PeerManagement.RedisPassword`           |
+| `REFINERY_REDIS_CLUSTER_HOSTS`        | `PeerManagement.RedisClusterHosts`       |
+| `REFINERY_REDIS_SENTINEL_MASTER_NAME` | `PeerManagement.RedisSentinelMasterName` |
+| `REFINERY_REDIS_SENTINEL_PASSWORD`    | `PeerManagement.RedisSentinelPassword`   |
+| `REFINERY_REDIS_SENTINEL_HOSTS`       | `PeerManagement.RedisSentinelHosts`      |
+| `REFINERY_REDIS_SENTINEL_USERNAME`    | `PeerManagement.RedisSentinelUsername`   |
+| `REFINERY_REDIS_SENTINEL_PASSWORD`    | `PeerManagement.RedisSentinelPassword`   |
+| `REFINERY_HONEYCOMB_API_KEY`          | `HoneycombLogger.LoggerAPIKey`           |
+| `REFINERY_HONEYCOMB_METRICS_API_KEY`  | `LegacyMetrics.APIKey`                   |
+| `REFINERY_HONEYCOMB_API_KEY`          | `LegacyMetrics.APIKey`                   |
+| `REFINERY_QUERY_AUTH_TOKEN`           | `QueryAuthToken`                         |
 
 Note: `REFINERY_HONEYCOMB_METRICS_API_KEY` takes precedence over `REFINERY_HONEYCOMB_API_KEY` for the `LegacyMetrics.APIKey` configuration.
 
